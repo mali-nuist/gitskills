@@ -1,3 +1,4 @@
 # gitskills
+<<<<<<< HEAD
 dev added
-confict test - add words
+add a word
