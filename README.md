@@ -1,2 +1,3 @@
 # gitskills
-dev added
+dev addedi
+test confict   add word
