@@ -1,2 +1,2 @@
 # gitskills
-git is A good tool - master
+git is a good tool 
