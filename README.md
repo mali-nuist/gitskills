@@ -1,4 +1,2 @@
 # gitskills
-<<<<<<< HEAD
-dev added
-add a word
+git is A good tool - master
