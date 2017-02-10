@@ -1,2 +1,2 @@
 # gitskills
-git is  good tool 
+git is a good tool // bug fixed add "a"
