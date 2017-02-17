@@ -1,0 +1,733 @@
+=====================================================
+Basic
+初始化一个Git仓库，使用git init命令。
+添加文件到Git仓库，分两步：
+第一步，使用命令git add <file>，注意，可反复多次使用，添加多个文件；
+第二步，使用命令git commit，完成。
+
+-----------------------------------------------------
+创建版本库：
+mkdir learngit // 创建目录
+cd learngit 　　　// 进入目录
+pwd 　　　　　　　　　　　// 打印当前目录
+
+将创建的这个目录变为版本库：
+git init
+生成的.git目录是跟踪版本管理库的，不能修改删除，否则会破话git仓库
+
+
+创建文件：
+readme.txt内容：
+Git is a version control system.
+Git is free software.
+
+添加文件到git仓库：
+git add readme.txt //成功　没有任何显示unix哲学
+
+提交文件到git仓库：
+git commit -m "worte a readme file" //　-m　"" 为本次提交的说明
+
+ 1 file changed, 2 insertions(+)　// 1个文件变化，插入两行
+ create mode 100644 readme.txt
+
+　　　　　// 可以一次提交多个文件
+　　　　 // git add file1.txt
+     // git add file2.txt file3.txt
+     // git commit -m "add 3 files to the git repo"
+
+
+=========================================================
+Basic
+要随时掌握工作区的状态，使用git status命令。
+
+如果git status告诉你有文件被修改过，用git diff可以查看修改内容。
+
+--------------------------------------------------------
+
+修改readme.txt　第一句添加一个单词 distributed
+
+查看git状态：
+git status
+
+	位于分支 master
+	尚未暂存以备提交的变更：
+	  （使用 "git add <文件>..." 更新要提交的内容）
+	  （使用 "git checkout -- <文件>..." 丢弃工作区的改动）
+
+		修改：     readme.txt
+
+	修改尚未加入提交（使用 "git add" 和/或 "git commit -a"）
+
+	//readme.txt文件已被修改但是未提交
+
+查看文件哪里被修改了：
+git diff readme.txt
+	diff --git a/readme.txt b/readme.txt
+	index 46d49bf..9247db6 100644
+	--- a/readme.txt
+	+++ b/readme.txt
+	@@ -1,2 +1,2 @@
+	-Git is a version control system.
+	+Git is a distributed version control system.
+ 	Git is free software.
+// 查看发现第一行被修改，天剑了一个单词
+
+查看确认修改后提交：
+git add readme.txt
+
+git status  // 查看当前仓库状态：　告诉我们被绩效的修改包括readme.txt
+		位于分支 master
+		要提交的变更：
+		  （使用 "git reset HEAD <文件>..." 以取消暂存）
+
+		修改：     readme.txt
+
+git commit -m "add distributed word"　　// 提交到仓库
+	1 file changed, 1 insertion(+), 1 deletion(-)
+
+//此时再查看git status 则显示：
+				位于分支 master
+				无文件要提交，干净的工作区
+===============================================================
+Basic
+版本回退
+－－－－－－－－－－－－－－－－－－－－－－－－－－－
+HEAD指向的版本就是当前版本，因此，Git允许我们在版本的历史之间穿梭，使用命令git reset --hard commit_id。
+
+穿梭前，用git log可以查看提交历史，以便确定要回退到哪个版本。
+
+要重返未来，用git reflog查看命令历史，以便确定要回到未来的哪个版本。
+－－－－－－－－－－－－－－－－－－－－－－－－－－－
+
+修改readme.txt 第二行后面加上　distributed under the GPL
+然后提交：
+git add readme.txt
+git status
+git commit -m "append distributed under the GPL"
+
+目前仓库中由三个版本的文件：
+原始：add a readme.txt file　
+Git is a version control system.
+Git is free software.
+	
+修改１：add distributed word
+Git is a distributed version control system.
+Git is free software.
+
+修改２： append words to the second line
+Git is a distributed version control system.
+Git is free software distributed under the GPL.
+
+查看历史记录的命令：
+git log
+	----------------------------------------
+		Author: wsdjeg <wsdjeg@163.com>
+	Date:   Thu Feb 9 15:55:23 2017 +0800
+
+	    append words to the second line
+	
+	commit b1e1ecf7fec53fd5d3425f5e0c39249b3575aab2
+	Author: wsdjeg <wsdjeg@163.com>
+	Date:   Thu Feb 9 15:50:54 2017 +0800
+
+	    add distributed word
+
+	commit 86de06fb5f184eb44d8c444b5d008094cd423979
+	Author: wsdjeg <wsdjeg@163.com>
+	Date:   Thu Feb 9 15:31:17 2017 +0800
+
+	    add a readme.txt file
+	---------------------------------------
+如果太乱加上--pretty=oneline
+git log --pretty=oneline
+	------------------------------------------	
+	35d3b5259fc0314fce8f4f5f78bb688359b4a9d9 append words to the second line
+	b1e1ecf7fec53fd5d3425f5e0c39249b3575aab2 add distributed word
+	86de06fb5f184eb44d8c444b5d008094cd423979 add a readme.txt file
+	-----------------------------------------
+	//前面的一串是commit id版本号
+
+回退一个版本：
+	//git HEAD表示当前版本［第一个那串commit id］　上一个版本是HEAD^， 上上个版本HEAD^^， HEAD~100　上100个版本
+
+git reset --hard HEAD^ //回退一个版本
+	HEAD 现在位于 b1e1ecf add distributed word //已经成功回退,commit id 也变为b1e1...　也给出了回退后的版本做了啥修改
+// 此时再看readme.txt 可以发现文本内容已经回退了变为：
+						Git is a distributed version control system.
+						Git is free software.
+查看git的操作日志：
+git log
+	---------------------
+	commit b1e1ecf7fec53fd5d3425f5e0c39249b3575aab2
+	Author: wsdjeg <wsdjeg@163.com>
+	Date:   Thu Feb 9 15:50:54 2017 +0800
+
+	    add distributed word
+
+	commit 86de06fb5f184eb44d8c444b5d008094cd423979
+	Author: wsdjeg <wsdjeg@163.com>
+	Date:   Thu Feb 9 15:31:17 2017 +0800
+	
+	    add a readme.txt file
+	------------------
+	//回退了之前在第二行添加GPL的之前的那个版本已经看不到了，如果要回复这个版本,怎么办？
+找到那个版本的commit id 既可以回退：
+commit id 为：35d3b5259fc0314fce8f4f5f78bb688359b4a9d9
+git reset --hard 35d3b5259fc0314fce
+ 	HEAD 现在位于 35d3b52 append words to the second line
+ //记录回来了
+		-----------------------------------
+		git回退非常快，因为只是操作HEAD指针移动,如下图：
+
+		-------
+		|Head |  ------------->	append words to the second line
+		-------		        add distributed word
+					add a readme.txt file   
+		
+
+		-------
+		|Head |  -----  	append words to the second line
+		-------	      |------->	add distributed word
+					add a readme.txt file   
+
+// 所以HEAD指向哪个版本号，当前版本就定位在哪里
+
+如果找不到commit id怎么办？
+	如果执行git rest --hard HEAD^ 即HEAD移动到add distributed word时，没有记录
+	append words to the second line 的commit id 如何恢复？？？？
+	可以通过执行git reflog来查看之前的每一次命令：
+	－－－－－－－－－－－－－－－－－－－－－－
+	b1e1ecf HEAD@{0}: reset: moving to HEAD^
+	35d3b52 HEAD@{1}: reset: moving to 35d3b5259fc0314fce
+	b1e1ecf HEAD@{2}: reset: moving to HEAD^
+	35d3b52 HEAD@{3}: commit: append words to the second line
+	b1e1ecf HEAD@{4}: commit: add distributed word
+	86de06f HEAD@{5}: commit (initial): add a readme.txt file
+	－－－－－－－－－－－－－－－－－－－－－－－
+	// 可以发现append words to the second line的commit id为35d3b52
+	git reset --hard 35d3b52
+			HEAD 现在位于 35d3b52 append words to the second line
+	//我胡汉三又回来了．．．．
+
+＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+Basic
+工作区和暂存区
+
+
+工作区 working directory
+比如当前的repo就是一个工作区
+
+版本库　repository 工作区内有一个隐藏目录.git这不算工作区，是Git的版本库
+
+Git的版本库中存了很多东西，其中最重要的就是Stage或者index的暂存区，
+还有Git为我们自动创建的第一个分之master，以及指向master的指针HEAD
+
+工作区　　　　　　　　　　　　　版本库
+---------|		--------------------------------------------------|
+|	 |   add        |   ----stage---    HEAD     			  |
+|file ---|--------------|-->|		|       \--->master--------|	  |
+|	 |		|   |		|     	     |	           |	  |
+|	 |		|   |	file ---|------------|-->file	   |	  |
+|	 |		|   |		|	     |		   |	  |
+|	 |		|   |		|	     | 		   |      |
+|	 |		|   |		|	     |		   |      |
+|	 |		|   |------------	     --------------|      |
+|	 |		|						  |
+|	 |		|						  |
+|--------		|-------------------------------------------------
+
+文件添加git版本库分两步骤执行：
+	git add 实际上是把修改的文件添加到暂存区；
+	git commit 实际上是把暂存区的内容提交到当前分支；
+
+	创建git版本库的时候，git自动创建了唯一一个master分支，所以现在git commit就是往master分支上提交更改．
+	可以简单理解为：需要提交的文件修改统统放到暂存区，然后一次性提交暂存区中的所有修改．
+	
+	操作：
+	readme.txt添加第三行Git has a mutable index called stage.
+	工作区新增一个LICENSE文本文件，内容随便写．
+	查看修改状态：
+	git status
+		-----------------------------------------------------
+		位于分支 master
+		尚未暂存以备提交的变更：
+		  （使用 "git add <文件>..." 更新要提交的内容）
+		  （使用 "git checkout -- <文件>..." 丢弃工作区的改动）
+			修改：     readme.txt
+		未跟踪的文件:
+		  （使用 "git add <文件>..." 以包含要提交的内容）
+			LICENSE
+		修改尚未加入提交（使用 "git add" 和/或 "git commit -a"）
+		-----------------------------------------------------
+		//　readme.txt已经修改了，但是LICENSE由于没有加到仓库所以是untracked未跟踪的文件
+	添加再查看状态：
+	git add readme.txt LICENSE
+	git status
+		----------------------------------
+		位于分支 master
+		要提交的变更：
+		  （使用 "git reset HEAD <文件>..." 以取消暂存）
+		新文件：   LICENSE
+		修改：     readme.txt
+		----------------------------------
+		//暂存区变为有一个新文件LICENSE以及修改了的readme.txt文件，如稀土
+
+	
+		工作区　　　　　　　　　　　　　版本库
+---------|		--------------------------------------------------|
+|	 |   git add    |   ----stage---    HEAD     			  |
+|readme -|--------------|-->|		|       \--->master--------|	  |
+|LICENS  |		|   |readme.txt |     	     |	           |	  |
+|	 |		|   |LICENSE    |            |  otherfile  |	  |
+|	 |		|   |		|	     |		   |	  |
+|	 |		|   |		|	     | 		   |      |
+|	 |		|   |		|	     |		   |      |
+|	 |		|   |------------	     --------------|      |
+|	 |		|						  |
+|	 |		|						  |
+|--------		|-------------------------------------------------
+	
+	提交后就会将暂存区的修改全部提交到分支,暂存区会是clean的
+	git commit
+	git status
+		－－－－－－－－－－－－－－－－－－
+		位于分支 master
+		无文件要提交，干净的工作区
+		-------------------------------
+	此时文件都已经全部在分支，如下图：
+
+			
+			工作区　　　　　　　　　　　　　版本库
+---------|		--------------------------------------------------|
+|	 |      	|   ----stage---    HEAD     			  |
+|readme 　|　　　　　　　　　　　　　　|　　　|		|       \--->master--------|	  |
+|LICENS  |		|   | 　　　　　　　　　　|  git commit|	           |	  |
+|	 |		|   |　　    　　　　-|----------> |  readme.txt |	  |
+|	 |		|   |		|	     |	LICENSE	   |	  |
+|	 |		|   |		|	     | 		   |      |
+|	 |		|   |		|	     |		   |      |
+|	 |		|   |------------	     --------------|      |
+|	 |		|						  |
+|	 |		|						  |
+|--------		|-------------------------------------------------
+
+
+=====================================================================
+－－－－－－－－－－－－－－－－－－－－－－
+管理修改
+git跟踪并管理的是修改，而非文件
+如果不add到暂存区，那就不会加入到commit中去
+－－－－－－－－－－－－－－－－－－－－－
+readme.txt 新增一行　Git tracks changes.
+添加
+git add readme.txt
+git status
+	------------------
+	位于分支 master
+	要提交的变更：
+  	（使用 "git reset HEAD <文件>..." 以取消暂存）
+		修改：     readme.txt
+	------------------
+再修改readme.txt 最后一行改为　Git tracks changes of files.
+
+修改后提交：
+git commit -m "git tracks changes"
+查看装填：
+git status
+	----------------
+	位于分支 master
+	尚未暂存以备提交的变更：
+  	（使用 "git add <文件>..." 更新要提交的内容）
+  	（使用 "git checkout -- <文件>..." 丢弃工作区的改动）
+		修改：     readme.txt
+	修改尚未加入提交（使用 "git add" 和/或 "git commit -a"）
+	----------------
+	//第二次的修改没有被提交? 流程
+	第一次提交---->add --->第二次修改---->提交
+	因为git管理的是修改而不是文件，当git add后便会将上面的第一次提交放到暂存区准备提交．
+	然后再次修改，而第二次修改并没有放入暂存区，所以提交只会将在暂存区的第一次提交，第二次修改还没有放到暂存区，不会被提交．		
+	可以查看分支文件和本地问价的差别
+	git diff HEAD -- readme.txt
+		-----------------------
+		diff --git a/readme.txt b/readme.txt
+		index 76d770f..a9c5755 100644
+		--- a/readme.txt
+		+++ b/readme.txt
+		@@ -1,4 +1,4 @@
+		 Git is a distributed version control system.
+		 Git is free software distributed under the GPL.
+		 Git has a mutable index called stage.
+		-Git tracks changes.
+		+Git tracks changes of files.
+		---------------------------
+		//　可以发现 +Git tracks changes of files. 说明第二次修改没有被提交．
+	要提交第二次修改可以再次add commit
+	git add readme.txt
+	git status
+	git commit -m "git track changes"
+	git diff HEAD readme.txt //可以发现没有区别
+
+＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+撤销修改
+-----------------------------
+场景1：当你改乱了工作区某个文件的内容，想直接丢弃工作区的修改时，用命令git checkout -- file。
+场景2：当你不但改乱了工作区某个文件的内容，还添加到了暂存区时，想丢弃修改，分两步，第一步用命令git reset HEAD file，就回到了场景1，第二步按场景1操作。
+场景3：已经提交了不合适的修改到版本库时，想要撤销本次提交，参考版本回退一节，不过前提是没有推送到远程库。
+------------------------------
+
+radme.txt最后一行添加了　	My stupid boss still prefers SVN.
+准备提交，发现句子不妥，需要修正．
+于是　看下状态　
+git status
+	------------------------
+	位于分支 master
+	尚未暂存以备提交的变更：
+  	（使用 "git add <文件>..." 更新要提交的内容）
+  	（使用 "git checkout -- <文件>..." 丢弃工作区的改动）//看这里，丢弃改动的命令
+		修改：     readme.txt
+	修改尚未加入提交（使用 "git add" 和/或 "git commit -a"）
+	-----------------------------
+	// 于是咱丢掉修改
+git checkout -- readme.txt
+	//该命令会将工作区的全部修改撤销，两种情况：
+	//readme.txt修改后没有放到暂存区，撤销后就回到与版本库一模一样的装填
+	//readme.txt修改后已经提交暂存区，且又做了修改，撤销恢复到添加到暂存区的状态
+	//也就是说让文件回到最后一次git commit或者git add时的状态．
+	
+// git checkout -- readme.txt中的--符号很重要，没有就变成切换到另一个分支的命令．＊＊＊＊
+
+
+以上写了胡话没有添加到暂存区，如果添加到暂存区了怎么办？
+	readme.txt 最后一行添加 My stupid boss still prefers SVN.
+	并添加到暂存区
+	git add readme.txt
+	查看状态git status 发现修改只是添加到暂存区
+		－－－－－－－－－－－－－－
+		位于分支 master
+		要提交的变更：
+		  （使用 "git reset HEAD <文件>..." 以取消暂存）//看这里　取消暂存
+			修改：     readme.txt
+		－－－－－－－－－－－－－－－
+	通过git reset HEAD 文件取消暂存
+	git reset HEAD readme.txt
+		------------------------
+		重置后取消暂存的变更：
+		M	readme.txt
+		-----------------------
+	git status 查看状态可以发现暂存区是干净的，工作区有修改
+		－－－－－－－－－－－－－
+		位于分支 master
+		尚未暂存以备提交的变更：
+		  （使用 "git add <文件>..." 更新要提交的内容）
+		  （使用 "git checkout -- <文件>..." 丢弃工作区的改动）
+			修改：     readme.txt
+			修改尚未加入提交（使用 "git add" 和/或 "git commit -a"）
+		－－－－－－－－－－－－－
+	
+		git reset 既可以回退版本　也可以把暂存区的修改回退到工作区　HEAD标识最新的版本
+	此时，我需要丢西工作区的修改，用之前的命令[看status的结果中有提示]：
+	git checkout -- readme.txt
+	再查看git status可以发现工作区　暂存区都是干净的
+
+如果改错东西，添加到暂存区，还从暂存区提交到了版本库了　怎么办？
+通过git reset --hard commit_id　进行回退
+不过是有条件的，还没有把本地版本库推送到远程．
+=====================================================
+删除文件
+－－－－－－－－－－－－－
+命令git rm用于删除一个文件。如果一个文件已经被提交到版本库，那么你永远不用担心误删．
+但是要小心，你只能恢复文件到最新版本，你会丢失最近一次提交后你修改的内容。
+－－－－－－－－－－－－－
+
+添加个test.txt到Git 并提交：
+git add test.txt
+git commit -m "add test.txt"
+如果直接删除文件　rm -rf test.txt
+通过git stuats命令可以发现，工作区和版本库不一致了
+	－－－－－－－－－－－－－－－
+	位于分支 master
+	尚未暂存以备提交的变更：
+  	（使用 "git add/rm <文件>..." 更新要提交的内容）
+  	（使用 "git checkout -- <文件>..." 丢弃工作区的改动）
+		删除：     test.txt
+	修改尚未加入提交（使用 "git add" 和/或 "git commit -a"）
+	－－－－－－－－－－－－－－－
+两个选择 1　从版本库中删除该文件 git rm 并提交
+	git rm test.txt
+	git commit -m "remove test.xt"
+	2　删错了,需要从版本库中的文件恢复到本地,即丢弃工作区的修改： git checkout -- test.txt
+
+
+＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+远程仓库
+
+git是分布式版本控制系统，同一个git仓库可以分布到不同的机器上．
+
+找一台电脑作为服务器，其他每个人都从服务器仓库克隆一份数据到自己电脑上，
+并且把各自的提交推送到服务器仓库里，也从服务器仓库拉取别人的提交．
+
+gitHub就是一个提供git仓库托管服务的网站．只需要注册个账号，就可以免费获得Git远程仓库．
+
+本地git仓库gitHub仓库之间的传输是ssh加密的所以需要如下步骤：
+１　创建SSH key：
+	ssh-keygen -t rsa -C "561252623@qq.com"
+	实验而已可以不为这个key设置密码,也可以再生成key的过程中输入密码
+２  登录gitHub,打开account settings, ssh keys页面，点击add ssh key,填上任意的title
+	在key文本框中贴上id_rsa.pub文件的内容．［在home目录下的.ssh目录下找］
+
+	
+为什么GitHub需要SSH Key呢？因为GitHub需要识别出你推送的提交确实是你推送的，而不是别人冒充的，
+而Git支持SSH协议，所以，GitHub只要知道了你的公钥，就可以确认只有你自己才能推送。
+
+当然，GitHub允许你添加多个Key。假定你有若干电脑，你一会儿在公司提交，一会儿在家里提交，
+只要把每台电脑的Key都添加到GitHub，就可以在每台电脑上往GitHub推送了。
+
+在GitHub上免费托管的Git仓库，任何人都可以看到喔（但只有你自己才能改）。所以，不要把敏感信息放进去。
+
+如果你不想让别人看到Git库，有两个办法，一个是交点保护费，让GitHub把公开的仓库变成私有的，这样别人就看不见了（不可读更不可写）。
+另一个办法是自己动手，搭一个Git服务器，因为是你自己的Git服务器，所以别人也是看不见的。这个方法我们后面会讲到的，相当简单，公司内部开发必备。
+
+＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+添加远程库
+--------------------
+要关联一个远程库，使用命令git remote add origin https://github.com/mali-nuist/repo.git;
+
+关联后，使用命令git push -u origin master第一次推送master分支的所有内容；
+
+此后，每次本地提交后，只要有必要，就可以使用命令git push origin master推送最新修改；
+--------------------
+
+当前本地创建了git仓库，想在远程gitHub创建仓库，且让两个仓库进行自动同步．
+如此gitHub仓库既可以作为备份，又可以让其他人通过该仓库来写作．
+
+登录github，create a new repo,repository name 为repo	
+	
+此时，gitHub上的repo仓库为空，gitHub提示我们可以将本地仓库push到gitHub,在本地repo仓库下执行以下命令：
+…or push an existing repository from the command line
+	git remote add origin https://github.com/mali-nuist/repo.git
+	git push -u origin master
+
+	－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
+	git remote add origin https://github.com/mali-nuist/repo.git
+	git push -u origin master 
+		Username for 'https://github.com': mali-nuist
+		Password for 'https://mali-nuist@github.com': 
+		对象计数中: 23, 完成.
+		Delta compression using up to 4 threads.
+		压缩对象中: 100% (18/18), 完成.
+		写入对象中: 100% (23/23), 1.90 KiB | 0 bytes/s, 完成.
+		Total 23 (delta 5), reused 0 (delta 0)
+		remote: Resolving deltas: 100% (5/5), done.
+		To https://github.com/mali-nuist/repo.git
+		 * [new branch]      master -> master
+		分支 master 设置为跟踪来自 origin 的远程分支 master。
+	－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
+		
+	用git push命令，实际上是把当前分支master推送到远程。
+	我们第一次推送master分支时，加上了-u参数，Git不但会把本地的master分支内容推送的远程新的master分支，
+	还会把本地的master分支和远程的master分支关联起来，在以后的推送或者拉取时就可以简化命令。
+
+	从现在起，只要本地作了提交，就可以通过命令：
+
+	git push origin master
+	把本地master分支的最新修改推送至GitHub，现在，你就拥有了真正的分布式版本库！
+	------------------------------------------------------------
+	当你第一次使用Git的clone或者push命令连接GitHub时，会得到一个警告：
+
+	The authenticity of host 'github.com (xx.xx.xx.xx)' can't be established.
+	RSA key fingerprint is xx.xx.xx.xx.xx.
+	Are you sure you want to continue connecting (yes/no)?
+	这是因为Git使用SSH连接，而SSH连接在第一次验证GitHub服务器的Key时，
+	需要你确认GitHub的Key的指纹信息是否真的来自GitHub的服务器，输入yes回车即可。
+
+	Git会输出一个警告，告诉你已经把GitHub的Key添加到本机的一个信任列表里了：
+
+	Warning: Permanently added 'github.com' (RSA) to the list of known hosts.
+	这个警告只会出现一次，后面的操作就不会有任何警告了。
+
+	如果你实在担心有人冒充GitHub服务器，输入yes前可以对照GitHub的RSA Key的指纹信息是否与SSH连接给出的一致。
+
+===================================================================
+从远程库克隆
+
+之前都是先有本地库，后有远程库的时候，如何关联远程库。
+现在，假设我们从零开发，那么最好的方式是先创建远程库，然后，从远程库克隆。
+首先，登陆GitHub，创建一个新的仓库，名字叫gitskills	
+勾选Initialize this repository with a README，这样GitHub会自动为我们创建一个README.md文件。创建完毕后，可以看到README.md文件
+
+
+克隆仓库
+git clone
+
+git clone git@github.com:mali-nuist/gitskills.git
+
+
+分支管理
+===========================
+master分支是一条线,master指向最新提交,HEAD指向master,每次提交master向前移动一步
+head--> master -->主分支
+	      HEAD						HEAD
+		|						  |
+	      master						master
+		|						  |
+a-------b-------c    commit -m "add d"  ----> a------b------c-----d
+=========================
+创建新分支dev,master指向最新提交,把HEAD指向dev,以后对工作区的修改提交就针对dev了
+
+原始:
+	      HEAD						
+		|						 
+	      master		---> 		  master				master				    			master
+		|				    |		  commit		  |				    			   |	
+a-------b-------c 			a-----b-----c          ---------->    a-----b-----c------d  如何合并?  master指向当前dev的提交a----b----c-----d  合并后可以把dev分支删除  
+						    |						 |			      			   |
+						   dev						dev			    			  dev
+						    |						 |			      			   |
+						   HEAD						HEAD			     			  HEAD
+
+					此时再提交,master不变,动的是dev
+	
+创建并切换分支: 
+git checkout -b dev  ===等价于===	git branch dev [建立分支] + git checkout dev [切换分支]
+
+查看分支情况
+git branch
+
+切换分支
+git checkout master
+
+合并分支:
+1 fast forward提交,直接将master指向当前dev的提交	
+	[没有历史记录
+	b7b65ae HEAD@{0}: merge dev: Fast-forward
+	f9decf0 HEAD@{1}: checkout: moving from dev to master
+	]
+  git merge dev[以fast forward模式将dev分支合并到master]	
+
+删除分支:
+git　branch -d dev	
+
+解决冲突：
+git merge dev [fast forward模式]
+主要注意master分支与主分支的演进情况，搞清楚conflict 再设么情况下发生
+分支从master分支分离后，做了修改提交－－－即分支前进了一步
+而后master分支对文件做了修改，提交－－－master分支也前进了一步，两次修改有冲突，合并．．．
+
+-------原始master-------master----合并会冲突　因为各自对文件做了修改提交
+	　｜			|
+	feature---------fature---
+
+git log --graph　显示分支合并过程
+
+git log --graph --pretty=oneline 
+
+--no-ff  no fast forward模式
+合并分支时，如果可能，Git会用Fast forward模式，但这种模式下，删除分支后，会丢掉分支信息。
+
+
+fast forward模式
+git merge
+      master		    master
+	 |		　　　　　　|	
+－－－－－ａ 刚拉完分支　　－－－－a                     merge fast forawrd  直接把master指向dev丢失分支信息　　－－－－－ａ		master
+	 |		      |											｜		 |
+	dev 		      ------------dev-----								 ----------------dev--
+no fast forward模式
+git merge --no-ff -m "commit no ff" dev
+
+
+
+     master		    master
+	 |		　　　　　　|	
+－－－－－ａ 刚拉完分支　　－－－－a              　　　　　　　　　　－－－－－ａ－－－－－－－master 记录下了master分支
+	 |		      |					       |	      |
+	dev 		      ------------dev做了修改                    ----dev--------
+
+保留工作现场
+git stash
+然后拉取某一个分支进行ｂｕｇ修改提交
+再恢复现场：
+	[查询现场报错在哪里保存在哪]git stash list
+恢复：
+1: git stash apply恢复现场，但是stash内容不删除，需要用git stash drop删除
+2: git stash pop 恢复现场的同时把stash也删掉　［删掉意味git stash list 没有内容］
+
+git stash apply stash@{0} [stash@{0}可以通过git satsh list查看]
+
+
+远程库信息：
+git remote
+git remote -v
+git push origin master　　推送master到远程origin的对应分支
+git push origin dev	推送dev   到远程origin的对应分支
+
+抓取分支：
+git clone git@github.com:mali-nuist/repo.git
+
+创建远程dev分支到本地
+git checout -b dev origin/dev
+提交远程
+git push origin dev
+
+你试图ｐｕｓｈ但是有冲突　可以先ｐｕｌｌ
+git pull [失败，可能没指定本地dev与远程ｄｅｖ的连接关系]
+git branch --set-upstrean dev origin/dev
+在git pull --- git push ---有冲突解决push
+==================================================
+多人协作的工作模式通常是这样：
+
+首先，可以试图用git push origin branch-name推送自己的修改；
+
+如果推送失败，则因为远程分支比你的本地更新，需要先用git pull试图合并；
+
+如果合并有冲突，则解决冲突，并在本地提交；
+
+没有冲突或者解决掉冲突后，再用git push origin branch-name推送就能成功！
+
+如果git pull提示“no tracking information”，则说明本地分支和远程分支的链接关系没有创建，用命令git branch --set-upstream branch-name origin/branch-name。
+
+=========
+标签：
+打标签
+git tag v1.0
+看标签
+git tag
+
+根据commit id 打标签
+git tag v1.0  commitid
+
+显示tag的详细信息
+git show tagname
+
+带说明标签地打标签 -a指定标签　－m 指定说明
+git tag -a v1.0 -m "说明"　commitid
+
+删除标签：
+git tag -d v1.0
+
+推送标签到远程：
+git push origin v1.0
+
+推送全部标签到远程：
+git push origin --tags
+
+删除远程标签：
+１先删除本地　git tag -d v1.0
+２删除远程　  git push origin :refs/tags/v1.0
+
+//忽略特殊文件：
+Git工作区的根目录下创建一个特殊的.gitignore文件
+填入需要忽略的文件名
+现成的.gitignore文件：https://github.com/github/gitignore/blob/master/Java.gitignore
+.class文件被忽略但有个文件很想添加，强行添加：
+git add -f App.class
+
+检查.gitignore写的是否有问题
+git check-ignore
+
+
+／／配置别名:
+
+
+
+
