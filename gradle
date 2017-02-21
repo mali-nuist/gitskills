@@ -197,4 +197,102 @@ gradle 的依赖管理
 
 	    testCompile 'junit:junit:4.11'
 	}
+==========================================================
+实例：
+１执行多任务
+	几个task之间的依赖关系：compileTest依赖compile 
+			     test依赖compileTest以及compile
+			     dist依赖test以及compile
+	compile <-----compileTest <-----test <----dist
+	 |    |<-________________________|	  |	
+	　|<---------------------------------------|					
+	build.gradle文件中获取多个task的doLast钩子
+	task compile {
+	    doLast {
+		println 'compiling source'
+	    }
+	}
 
+	task compileTest(dependsOn: compile) {
+	    doLast {
+		println 'compiling unit tests'
+	    }
+	}
+
+	task test(dependsOn: [compile, compileTest]) {
+	    doLast {
+		println 'running unit tests'
+	    }
+	}
+
+	task dist(dependsOn: [compile, test]) {
+	    doLast {
+		println 'building the distribution'
+	    }
+	}
+//build文件中定义多个任务，获得每个任务的doLast钩子，并传递进一个闭包
+如果运行gradle dist:
+gradle dist    [因为它依赖compile， test(它又依赖　compile compileTest)] 	
+		因此应该　compile -->compileTest -->test ---> dist 如下：
+		:compile
+		compiling source
+		:compileTest
+		compiling unit tests
+		:test    // 1 place
+		running unit tests
+		:dist    // 2 place
+		building the distribution
+		BUILD SUCCESSFUL
+		Total time: 1.085 secs
+同时运行gradle dist test:
+gradle dist test
+	[由上个命令知道dist的顺序为compile --> compileTest -->test --> dist]
+	[再加上test : compile---> compileTest --> test]
+	[但是每个任务指挥被执行一次　因此仍然是compile-->compileTest-->test->dist]
+
+gradle test test 与 gradle test 输出是一致的．
+
+排除任务：
+	gradle dist -x test
+	因此　直接　运行　comple dist
+
+名称缩写：
+	gradle di == gradle dist
+	gradle cT == gadle compileTest
+
+选择编译文件执行：
+	正常都是执行当前文件夹下的编译文件．
+	在当前目录下新建subdir,该目录下新建myproject.gradle
+		-------------
+		task hello {
+			doLast{
+				println "using build file '$buildFile.name' in '$buildFile.parentFile.name'."
+			}
+		}
+
+		-------------	
+	静默模式-q选择编译文件-b指定编译文件　执行hello　task
+	gradle -q -b subdir/myporject.gradle hello
+
+选择工程(通过指定工程目录)执行［工程的编译文件名称需要为build.gradle］：
+	gradle -q -p subdir hello
+	-----build.gradle--------
+	task hello {
+			doLast{
+				println "using build file '$buildFile.name' in '$buildFile.parentFile.name'."
+			}
+	}
+	-------------------------
+
+强制任务执行：
+	gradle --rerun-tasks (taskname) 强制执行　哪怕所有的文件的　up-to-date
+
+列出projects
+	gradle projects　列出给定工程的所有子工程
+	gradle -q projects
+给工程提供一个描述：
+	build.gradle文件中添加：
+		description　= 'the description of projects'
+
+列出tasks
+	gradle -q tasks 
