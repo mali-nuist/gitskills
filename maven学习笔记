@@ -1,0 +1,292 @@
+maven 学习笔记
+pom.xml pom ---> project object model
+
+pom文件的最小配置
+	<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+		              http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	    <modelVersion>4.0.0</modelVersion>
+
+	    <groupId>com.jenkov</groupId>
+	    <artifactId>java-web-crawler</artifactId>
+	    <version>1.0.0</version>
+	</project>
+	// modelVersion　--　project object model的版本
+	// groupId 当前项目的groupid
+	// artifactId　当前项目的artifactId
+	//　version 当前项目的版本
+
+如果该项目放入仓库则其目录结构为: repo_dir/com/jenkov/java-web-crawler/1.0.0/java-web-crawler-1.0.0.jar
+
+Super Pom
+	所有的pom文件都继承于一个super Pom.若没有指定super pom,则pom继承base pom.
+
+显式指定pom继承
+	//指定继承pom则会覆盖super pom中的配置
+	<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   		<modelVersion>4.0.0</modelVersion>
+    
+       	 	<parent>
+	       	 	<groupId>org.codehaus.mojo</groupId>
+			<artifactId>my-parent</artifactId>
+			<version>2.0</version>
+			<relativePath>../my-parent</relativePath>
+        	</parent>
+    
+
+    		<artifactId>my-project</artifactId>
+   	 ...
+	</project>
+
+Effective Pom:
+	如果有很多的继承，很难知道整体pom文件的样子，使用以下命令查看整体effective pom文件
+	mvn help:effective-pom
+
+Maven 配置文件：
+	两个配置文件：　$M2_HOME/conf/setting.xml
+		      ~/.m2/setting.xml
+	.m2目录下的配置文件会默认覆盖安装配置文件
+
+运行maven:
+	mvn (build life cycle / phase / goal)
+	mvn install    // 执行build phase : install
+		       // install 为default build life cycle中的一个build phase
+	// 运行一个goal
+	mvn dependency:copy-dependencies 执行dependency build phase中的copy-dependencies　goal
+	
+maven 目录结构
+
+	-src
+	    -main
+		-java
+		-resources
+		-webapps
+	    -test
+		-java
+		-resources
+	-target
+
+工程依赖：
+	<dependencies>
+		<dependency>
+		  <groupId>org.jsoup</groupId>
+		  <artifactId>jsoup</artifactId>
+		  <version>1.7.1</version>
+		</dependency>
+
+		<dependency>
+		  <groupId>junit</groupId>
+		  <artifactId>junit</artifactId>
+		  <version>4.8.1</version>
+		  <scope>test</scope>
+		</dependency>
+    　  </dependencies>
+	
+外部依赖：不位于maven仓库的依赖
+	<dependency>
+	  <groupId>mydependency</groupId>　　　　　　//groupId和artifactId都设为依赖的名称
+	  <artifactId>mydependency</artifactId>
+	  <scope>system</scope>　//scope是system
+	  <version>1.0</version>//指定版本
+	　 //　${basedir}为pom文件所在目录　以下指定在本地磁盘上的外部依赖jar包
+	  <systemPath>${basedir}\war\WEB-INF\lib\mydependency.jar</systemPath>
+	</dependency>
+
+快照依赖：
+	<dependency>
+	    <groupId>com.jenkov</groupId>
+	    <artifactId>java-web-crawler</artifactId>
+	    <version>1.0-SNAPSHOT</version>　//版本后加上-SNAPSHOT
+	</dependency>
+	//添加了快照版本的依赖后无需指定该大版本的最新的版本
+	//快照依赖使得每次都下载依赖包的最新的快照版本到本地仓库
+
+maven仓库：
+	本地仓库
+	中央仓库
+	远程仓库
+	//按照这个顺序去下载依赖的
+
+setting.xml指定本地仓库:
+	<settings>
+	    <localRepository>
+		d:\data\java\products\maven\repository
+	    </localRepository>
+	</settings>
+
+pom.xml指定远程仓库
+	//位于dependencies标签之前
+	<repositories>
+	   <repository>
+	       <id>jenkov.code</id>
+	       <url>http://maven.jenkov.com/maven2/lib</url>
+	   </repository>
+	</repositories>
+------------------------------------------------------------
+maven的liefe cycles, phases, goals
+
+三个life cycles
+	default  //处理compile以及package的相关事物
+	clean	　//处理移除输出目录临时文件/jar包/classess等文件目录的相关事务
+	site	　//处理工程的文档生成等相关事物
+
+每个life cycle都包含一系列的build phases,每个build phase又被分为多个goal
+	可以执行　life cycle　如 clean 以及site:
+		mvn clean
+		mvn site
+	可以执行build phase
+		mvn install //default life cycle中的一个build phase
+	可以执行一个goal
+		mvn dependency:copy-dependencies //default life cycle中denpendency　build phase中的　copy-dependencies　goal
+	//不能直接执行mvn default 只能指定default life cycle中的build phase 或者goal
+
+	执行一个build phase其之前的所有phases都会被执行 
+	常用的build phases:
+	Build Phase	Description
+	validate	Validates that the project is correct and all necessary information is available. This also makes sure the dependencies are downloaded.
+	compile		Compiles the source code of the project.
+	test		Runs the tests against the compiled source code using a suitable unit testing framework. These tests should not require the code be packaged or deployed.
+	package		Packs the compiled code in its distributable format, such as a JAR.
+	install		Install the package into the local repository, for use as a dependency in other projects locally.
+	deploy		Copies the final package to the remote repository for sharing with other developers and projects.
+
+	如果运行 mvn package 执行package build phase同时也会执执行之前的定义好的build phases sequence.
+
+Build Goals:
+	一个goal可以被关联到一个或者多个的build phases
+
+Maven build profiles:
+	MAVEN 编译配置文件在pom文件中的Profiles块中：
+	<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+	   http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	  <modelVersion>4.0.0</modelVersion>
+
+	  <groupId>com.jenkov.crawler</groupId>
+	  <artifactId>java-web-crawler</artifactId>
+	  <version>1.0.0</version>
+
+	  <profiles>
+	      <profile>
+		  <id>test</id>
+		  <activation>...</activation>
+		  <build>...</build>
+		  <modules>...</modules>
+		  <repositories>...</repositories>
+		  <pluginRepositories>...</pluginRepositories>
+		  <dependencies>...</dependencies>
+		  <reporting>...</reporting>
+		  <dependencyManagement>...</dependencyManagement>
+		  <distributionManagement>...</distributionManagement>
+	      </profile>
+	  </profiles>
+
+	</project>
+	
+	//　build profile的作用：profile的中的元素标签将会覆盖Pom文件中的同名标签
+	其中的<activation/>标签指定了触发build profile的条件．
+	一种方式：setting.xml中指定使用什么build profile
+	另一种　：mvn 命令使用-P profile-name　参数．
+
+maven 插件：
+	允许你在build过程中田间自己的action.通过创建简单的java类继承一个特殊的maven类，
+	之后创建工程的pom文件．
+	
+------------------------------------------------------------
+创建minimal pom文件：
+	<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+		              http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	    <modelVersion>4.0.0</modelVersion>
+
+
+	    <groupId>com.jenkov</groupId>
+
+	    <artifactId>hello-world</artifactId>
+
+	    <version>1.0.0</version>
+
+	</project>
+
+执行mvn clean　
+	清除工程目录周期之前编译的临时文件．
+
+创建maven目录结构，将pom.xml放到src上一级目录：
+	-src
+	    -main
+		-java
+		-resources
+	    -test
+		-java
+	-target
+
+创建java文件：
+	package helloworld;
+
+	public class HelloWorld {
+
+		public static void main(String args[]){
+
+			System.out.println("Hello World, Maven");
+
+		}
+
+	}
+编译工程：执行build phase->package
+	mvn package
+	运行package　phase及其之前的build phases
+	输出jar包名称规则：　artifactid-version.jar
+
+---------------------------------------------
+maven 命令：
+	mvn + one or more build life cycles, build phases or build goals
+
+	mvn clean　//执行clean life cycle 
+	
+	mvn clean install　// 先执行clean life cycle，再执行install build phase
+	
+三个主要的build Life cycles:
+clean
+default
+site
+
+mvn clean
+mvn site
+
+执行default life cycle:
+Build Phase	Description
+validate	Validates that the project is correct and all necessary information is available. This also makes sure the dependencies are downloaded.
+compile		Compiles the source code of the project.
+test		Runs the tests against the compiled source code using a suitable unit testing framework. These tests should not require the code be packaged or deployed.
+package		Packs the compiled code in its distributable format, such as a JAR.
+install		Install the package into the local repository, for use as a dependency in other projects locally.
+deploy		Copies the final package to the remote repository for sharing with other developers and projects.
+
+mvn compile //运行default life cycle中的compile phase
+            //因此会先执行validate phase之后再运行 compile phase
+
+----------------------
+maven archetypes maven原型
+	maven包含大量的原型,使用如下命令查看：
+	mvn archetype:generate
+	// 命令的本意是为你生成一个原型，但是没有指定构建具体的原型名称　
+	// 所以会默认输出所有的原型名称.
+	mvn archetype:generate > archetypes.txt //原型名称导出
+命名的原型
+mvn idea:idea　生成一个java工程，包含Idea的文件．
+mvn eclipse:eclipse 生成一个java工程，包含eclipseIDE的文件．
+－－－－－－－－－－－－
+maven 单元测试报告：
+	生成单元测试报告：
+	mvn surefire-report:report
+	只生成报告，不重新运行测试－－＞跳过测试
+	mvn surefire-report:report-only
+
+
+
