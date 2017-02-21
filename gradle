@@ -1,0 +1,200 @@
+gradle
+
+
+gradle -version
+		------------------------------------------------------------
+		Gradle 2.10
+		------------------------------------------------------------
+
+		Build time:   2016-01-26 15:17:49 UTC
+		Build number: none
+		Revision:     UNKNOWN
+
+		Groovy:       2.4.5
+		Ant:          Apache Ant(TM) version 1.9.6 compiled on July 8 2015
+		JVM:          1.7.0_80 (Oracle Corporation 24.80-b11)
+		OS:           Linux 4.4.0-62-generic amd64
+
+	gradle //将会运行当前目录下构建脚本中的gradle命令
+
+运行任务   task
+	gradle compileCode  //编译代码　（命令放在构建脚本中）
+
+
+
+运行多任务　tasks
+	gradle clean build  //　首先进行clean task　之后运行build task
+	gradle clean clean 　//　每个任务只会执行一次，因此只会运行一次clean
+
+任务名称缩写
+	gradle buil ----> gradle build
+
+排除任务
+	gradle build -x test  // build任务中排除test任务［gradle java plugin中build任务包括test任务和testClasses任务］
+			      // 比如你已经运行了了test任务知道其是正确的，再次build时可以排除test
+
+静默模式
+	gradle -q
+	gradle -q compileCode
+
+列出编译脚本中的所有任务　
+	gradle tasks
+	gradle tasks --all 　//　除了给出任务还会给出每个任务的详细描述信息 
+
+指定编译脚本
+	gradle -b subproject-dir/build.gradle build //　gradle编译subproject-dir目录下的编译脚本．
+
+指定工程
+	gradle -p subproject-dir build //使用subproject-dir工程目录下的build.gradle编译脚本编译
+
+列出所有子工程
+	gradle projects
+
+gradle帮助
+	gradle -h
+
+编译失败
+	gradle build --continue //忽略失败的task 继续编译［依赖失败的task的task均不编译］
+
+
+干跑　dry run
+	gradle -m build // gradle并不真正执行所有的task，只是列出真正编译时候的所有任务信息．
+
+－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
+gradle 任务
+一个任务包括两个阶段:frist && last
+一个任务在gradle内部是一个对象，为了钩进这对象的两个编译阶段，
+我们需要调用这两个阶段对应的方法，并传递给他们闭包作为参数．
+两个编译阶段对应的方法为：　doFirst()  doLast()
+
+在一个任务中调用这两个方法
+	task myTask					//自定义一个任务叫myTask
+	myTask.doFirst({				//调用myTask的doFirst方法，并将一个闭包作为参数传递过去
+		println "this is done first"
+	});
+	myTask.doLast({					//调用myTask的doLast方法，并将一个闭包作为参数传递过去
+		println "this is doen last"
+	});
+
+任务定义以及参数传递的短语法：
+	忽略最后的分号以及闭包的大括号
+	myTask.doFirst(
+		println "this is done first"
+	)
+	myTask.doLast(
+		println "this is done last"
+	)
+
+doLast的缩写方式
+	myTaks << {
+		println "this is done last"
+	}
+	等价于
+	myTask.doLast{
+		println "this is done last"
+	}
+定义task的同时传递闭包给doLast:
+	task myTask << {	
+		println "this is done last"	
+	}
+
+同一个执行阶段的多个闭包
+	//顺序执行
+	myTask.doLast {
+		println "this is done 2nd last"
+	}
+
+	myTaks.doLast {
+		println "this is doen 1st last"
+	}
+	//缩写方式
+	myTask << {
+	    println "This is done 2nd last"
+	}
+	myTask << {
+	    println "This is done last"
+	}
+
+默认任务［一个构建脚本中可能包含一个或者多个的默认任务］
+	gradle //只敲gradle，不提供参数时执行的就是默认任务
+
+编译脚本中指定默认任务
+	defaultTasks "firstTask" //将名为firstTask的任务指定为默认任务
+	defaultTasks 'firstTask', 'secondTask'　//指定两个任务为默认任务
+
+任务依赖　(dependsOn:taskName)
+	//定义一个firstTask传递一个闭包
+	task firstTask << {
+		println "this is first task"	
+	}
+	//定义myTask依赖上面定义的firstTask并传递一个闭包
+	task myTask(dependsOn:firstTask) << {
+		println "this is myTask"
+	}
+	
+－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
+gradle for java projects
+
+增加java插件
+	编译脚本顶部增加：
+	apply plugin : 'java'
+
+列出java编译任务［因为文件中已经增加了gradle的java插件］
+	gradle tasks
+
+编译java工程
+	gradle build
+	//Jar包在build目录　build/classes包含所有的编译类 build/lib包含jar包
+	//如果文件没有更新，再次运行gradle build将会跳过一些已经执行的任务，时间也会缩短
+
+清除编译文件
+	gradle clean
+--------------------------------------------------------------------------------
+gradle 的依赖管理
+	－－－－－－－－－－－－－－－－－－－－－
+	repositories {
+    		mavenCentral()　//指定中央仓库
+	
+	   	maven {　//指定其它maven仓库
+	   	    url "http://mavenrepo.jenkov.com/"
+  	  　　　　　　}
+	}
+	－－－－－－－－－－－－－－－－－－－－－
+本地仓库
+	//在repositories块中将url改为本地目录
+	maven {
+    		url "C:\\maven\\repository"
+	}
+
+声明依赖
+	//编译脚本中使用dependencies块，在其中声明依赖
+	dependencies {
+    		compile group: 'log4j'  , name: 'log4j'  , version: '1.2.17'
+	}
+	//以上生命了对log4j1.2.17版本的依赖
+	// group --- > groupId
+	// name  --- > artifactId
+	// version-- > version
+	缩写
+	dependencies {
+		compile 'log4j:log4j:1.2.17'	
+	}
+依赖配置
+	上面生命依赖过程中使用了compile命令，意思是编译过程依赖该log4j
+	除了compile依赖配置外还有其他的一些依赖配置：
+	-------------
+	compile 
+	runtime     默认runtime依赖配置包含了compile依赖配置所需要的依赖
+	testCompile　默认testCompile依赖配置包含了compile依赖配置所需要的依赖
+	testRuntime　默认testRuntime依赖配置包含了compile runtime testCompile依赖配置所需的依赖
+	-------------
+	例子：
+	//编译依赖log4j jdom 
+	//testCompile依赖junit，此外默认还包含compile依赖配置的依赖,即testCompile依赖配置还依赖log4j jdom
+	dependencies {
+	    compile 'log4j:log4j:1.2.17'
+	    compile 'jdom:jdom:1.0'
+
+	    testCompile 'junit:junit:4.11'
+	}
+
